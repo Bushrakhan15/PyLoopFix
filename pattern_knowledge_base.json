@@ -1,0 +1,469 @@
+{
+  "P2": {
+    "pattern_id": "P2",
+    "pattern_name": "Loop Reduction",
+    "structural_signature": {
+      "required": [
+        "nesting_unchanged",
+        "loop_count_reduced"
+      ],
+      "supporting": []
+    },
+    "detection_rules": [
+      "R1: multiple same-level (non-nested) loops in slow code",
+      "R2: loop_count_delta < 0",
+      "R3: nesting_delta == 0"
+    ],
+    "usage_context_signature": {
+      "nesting_unchanged": 1.0,
+      "loop_count_reduced": 1.0,
+      "has_membership_test_slow": 0.107,
+      "has_membership_test_fast": 0.075,
+      "in_check_removed": 0.07,
+      "set_introduced": 0.034,
+      "dict_introduced": 0.026,
+      "index_call_removed": 0.007,
+      "listcomp_introduced": 0.0,
+      "nesting_reduced": 0.0
+    },
+    "when": [
+      "When dealing with loops that can be replaced by mathematical formulas or more efficient algorithms"
+    ],
+    "why": [
+      "These approaches often reduce the time complexity significantly, leading to faster execution times"
+    ],
+    "how": [
+      "Replace nested loops or repetitive calculations with direct mathematical operations or optimized algorithms"
+    ],
+    "constraints": [
+      "Ensure that the new approach maintains the original logic and produces correct results"
+    ],
+    "representative_examples": [
+      {
+        "slow": "class Solution(object):\n    ans = -1\n    def lastRemaining(self, n):\n        if n == 100000000:\n            return 32896342\n        elif n == 1000000000:\n            return 534765398   \n        def helper(arr, isRev):\n            if len(arr) == 1:\n                self.ans = arr[0]\n                return\n            res = []\n            if not isRev:\n                for i in range(1, len(arr), 2):\n                    res.append(arr[i])\n            else:\n                for i in range(len(arr)-2,-1, -2):\n                    res.append(arr[i])\n                res.reverse()\n            helper(res, not isRev)\n        \n        temp = []\n        for i in range(1, n+1):\n            temp.append(i)\n        helper(temp, False)\n        return self.ans",
+        "fast": "class Solution(object):\n    def lastRemaining(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        stepPower = 0\n        right = True\n        head = 1\n        while n != 1:\n            step = 2 ** stepPower\n            stepPower += 1\n            if right:\n                head = head + step\n            elif not right and n % 2 != 0:\n                head = head + step\n            right = not right\n            n = n / 2\n            if n == 1:\n                break\n\n        return head",
+        "speedup": 262.9
+      },
+      {
+        "slow": "def to_xyi(str, target):\n\n  index = 0\n\n  for s in list(str):\n\n    if target == int(s):\n\n      x = index%4\n\n      if index < 4:\n\n        y = 0\n\n      else:\n\n        y = 1\n\n      return (x, y, index)\n\n    index += 1\n\n\n\ndef zero_swap(str, mx, my):\n\n  zx, zy, zi = to_xyi(str, 0)\n\n\n\n  for index in range(len(list(str))):\n\n    sx, sy, si = to_xyi(str, index)\n\n    if (zx + mx) == sx and (zy + my) == sy:\n\n      nstr = []\n\n      for s in list(str):\n\n        if s == str[zi]:\n\n          nstr.append(str[si])\n\n        elif s == str[si]:\n\n          nstr.append(str[zi])\n\n        else:\n\n          nstr.append(s)\n\n      return ''.join(nstr)\n\n\n\nrules = (\n\n  (lambda x, y : x <= 2, lambda str : zero_swap(str,  1,  0)),\n\n  (lambda x, y : y == 0, lambda str : zero_swap(str,  0,  1)),\n\n  (lambda x, y : x >= 1, lambda str : zero_swap(str, -1,  0)),\n\n  (lambda x, y : y == 1, lambda str : zero_swap(str,  0, -1)),\n\n)\n\n\n\ngoal = '01234567'\n\n\n\nmove_num = {goal: 0}\n\nqueue = [goal]\n\n\n\nwhile True:\n\n  if len(queue) == 0: break\n\n  search_map = queue.pop(0)\n\n\n\n  for can_move, move in rules:\n\n    x, y, i = to_xyi(search_map, 0)\n\n    if not can_move(x, y): continue\n\n    next_map = move(search_map)\n\n    if next_map in move_num: continue\n\n    move_num[next_map] = move_num[search_map] + 1\n\n    queue.append(next_map)\n\n\n\nimport sys\n\nfor s in sys.stdin:\n\n  s = s.replace(' ', '').rstrip()\n\n  print(move_num[s])",
+        "fast": "MOVE = [[1, 4], [0, 2, 5], [1, 3, 6], [2, 7], [0, 5], [1, 4, 6], [2, 5, 7], [3, 6]]\n\nanswers = {\"01234567\": 0}\n\n\n\ndef swap(field, a, b):\n\n  tmp = list(field)\n\n  tmp[a], tmp[b] = tmp[b], tmp[a]\n\n  return \"\".join(tmp)\n\n\n\ndef breadth_first_search(answers):\n\n  q = [[0, \"01234567\"]]\n\n\n\n  while len(q) != 0:\n\n    g, field = q.pop(0)\n\n    a = field.find(\"0\")\n\n\n\n    for b in MOVE[a]:\n\n      tmp = swap(field, a, b)\n\n\n\n      if not tmp in answers:\n\n        answers[tmp] = g+1\n\n        q.append([g+1, tmp])\n\n\n\n  return answers\n\n\n\nanswers = breadth_first_search(answers)\n\n\n\nwhile True:\n\n  try:\n\n    print(answers[input().replace(\" \", \"\")])\n\n  except:\n\n    break",
+        "speedup": 229.82
+      },
+      {
+        "slow": "# class Solution_rec(object):\n    \n#     def __init__(self):\n#         self.mem = {}\n\n#     def minDifficulty(self, jobDifficulty, d):\n#         \"\"\"\n#         :type jobDifficulty: List[int]\n#         :type d: int\n#         :rtype: int\n#         \"\"\"\n#         n = len(jobDifficulty)\n\n#         def rec(start, remaining_d):\n#             if start >= n:\n#                 if remaining_d > 0:\n#                     return float('inf')\n#                 return 0\n            \n#             stored_result = self.mem.get(start, {}).get(remaining_d, None)\n#             if stored_result is not None:\n#                 return stored_result\n\n#             if remaining_d == 1:\n#                 temp_result = max(jobDifficulty[start:])\n#                 if not self.mem.get(start):\n#                     self.mem[start] = {}\n                \n#                 self.mem[start][remaining_d] = temp_result\n#                 return temp_result\n\n#             min_difficulty = float('inf')\n#             for index in range(start+1, n):\n#                 temp_result = rec(index, remaining_d-1)\n#                 if temp_result == float('inf'):\n#                     continue\n\n#                 cur_difficulty = (\n#                     max(jobDifficulty[start:index]) + temp_result\n#                 )\n#                 min_difficulty = min(min_difficulty, cur_difficulty)\n            \n#             if not self.mem.get(start):\n#                 self.mem[start] = {}\n#             self.mem[start][remaining_d] = min_difficulty\n\n#             return min_difficulty\n\n#         result = rec(0, d)\n#         return result if result != float('inf') else -1\n\nclass Solution(object):\n\n    def minDifficulty(self, jobDifficulty, d):\n        \"\"\"\n        :type jobDifficulty: List[int]\n        :type d: int\n        :rtype: int\n        \"\"\"\n        n = len(jobDifficulty)\n\n        # Initialize a 2D array to store intermediate results\n        dp = [[float('inf')] * (d + 1) for _ in range(n + 1)]\n\n        # Base case: if no days left, but some jobs remaining, it's impossible\n        for i in range(1, n + 1):\n            dp[i][0] = float('inf')\n\n        # Base case: if no days and no jobs, the difficulty is 0\n        dp[0][0] = 0\n\n        # Iterate through each day\n        for day in range(1, d + 1):\n            # Iterate through each job\n            for job in range(1, n + 1):\n                # Calculate difficulty for the current day and job\n                cur_difficulty = 0\n\n                # Iterate from the current job to the first job of the day\n                for i in range(job, 0, -1):\n                    max_difficulty = max(jobDifficulty[i-1:job])\n                    cur_difficulty = max_difficulty + dp[i - 1][day - 1]\n                    dp[job][day] = min(dp[job][day], cur_difficulty)\n\n        result = dp[n][d]\n        return result if result != float('inf') else -1\n",
+        "fast": "class Solution(object):\n    def minDifficulty(self, jobDifficulty, d):\n        \"\"\"\n        :type jobDifficulty: List[int]\n        :type d: int\n        :rtype: int\n        \"\"\"\n        n = len(jobDifficulty)\n        if n < d:\n            return -1\n\n        # min_diff_curr_day and min_diff_prev_day record the minimum total job difficulty\n        # for the current day and previous day, respectively\n        min_diff_prev_day, min_diff_curr_day = [float('inf')] * n, [float('inf')] * n\n\n        for day in range(d):\n            # Use a monotonically decreasing stack to record job difficulties\n            stack = []\n\n            # The number of jobs needs to be no less than number of days passed.\n            for i in range(day, n):\n\n                # We initialize min_diff_curr_day[i] as only performing 1 job at the i-th index.\n                # At day 0, the minimum total job difficulty is to complete the 0th job only.\n                if i == 0:\n                    min_diff_curr_day[i] = jobDifficulty[0]\n                # Otherwise, we increment min_diff_prev_day[i - 1] by the i-th job difficulty\n                else:\n                    min_diff_curr_day[i] = min_diff_prev_day[i - 1] + jobDifficulty[i]\n\n                # When we find the last element in the stack is smaller than or equal to current job,\n                # we need to pop out the element to maintain a monotonic decreasing stack.\n                while stack and jobDifficulty[stack[-1]] <= jobDifficulty[i]:\n\n                    # If we include all jobs with index j+1 to i to the current day,\n                    # total job difficulty of the current day will be increased.\n                    # by the amount of jobDifficulty[i] - jobDifficulty[j]\n                    j = stack.pop()\n                    diff_incr = jobDifficulty[i] - jobDifficulty[j]\n                    min_diff_curr_day[i] = min(min_diff_curr_day[i], min_diff_curr_day[j] + diff_incr)\n\n                # When the last element in the stack is larger than current element,\n                # If we include all jobs with index j+1 to i to the current day,\n                # the overall job difficulty will not change.\n                if stack:\n                    min_diff_curr_day[i] = min(min_diff_curr_day[i], min_diff_curr_day[stack[-1]])\n\n                # Update the monotonic stack by adding in the current index\n                stack.append(i)\n\n            min_diff_prev_day, min_diff_curr_day = min_diff_curr_day, min_diff_prev_day\n\n        return min_diff_prev_day[-1]",
+        "speedup": 118.46
+      },
+      {
+        "slow": "class Solution:\n    def trailingZeroes(self, n: int) -> int:\n        fac = 1\n        if n==0 or n==1:\n            return 0\n        else:\n            for i in range(2,n+1):\n                fac = fac * i\n            c = 0\n            while(fac>0):\n                if(fac%10==0):\n                    c += 1\n                    fac = fac//10\n                else:\n                    break\n            return c",
+        "fast": "class Solution:\n    def trailingZeroes(self, n: int) -> int:\n        countOfZero = 0\n        powerOfFive = 5\n\n        while n//powerOfFive:\n            countOfZero+=n//powerOfFive\n            powerOfFive*=5\n        return countOfZero",
+        "speedup": 117.88
+      },
+      {
+        "slow": "class Solution:\n    def trailingZeroes(self, n: int) -> int:\n        factorial = 1\n        zercount = 0\n        for i in range(1,n + 1):\n            factorial = factorial*i\n        temp = factorial\n        while (temp > 0):\n            d = temp % 10\n            if d == 0:\n                zercount += 1\n            if d>0:\n                break\n            temp = temp//10\n        return zercount",
+        "fast": "class Solution:\n    def trailingZeroes(self, n: int) -> int:\n        countOfZero = 0\n        powerOfFive = 5\n\n        while n//powerOfFive:\n            countOfZero+=n//powerOfFive\n            powerOfFive*=5\n        return countOfZero",
+        "speedup": 111.73
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 5835,
+      "median_speedup": 1.23,
+      "mean_speedup": 2.97
+    },
+    "poi": {
+      "pattern": "P2 - Loop Reduction",
+      "activation_conditions": [
+        "Identify loops where the iteration can be simplified or replaced by a formula"
+      ],
+      "transformation": "Replace the loop with an equivalent mathematical operation or algorithm",
+      "constraints": [
+        "Preserve the functionality and output of the original code"
+      ],
+      "expected_benefit": "Significant reduction in execution time due to fewer iterations or more efficient computation"
+    }
+  },
+  "P1": {
+    "pattern_id": "P1",
+    "pattern_name": "Nested Loop Elimination",
+    "structural_signature": {
+      "required": [
+        "nesting_reduced",
+        "loop_count_reduced"
+      ],
+      "supporting": []
+    },
+    "detection_rules": [
+      "R1: nested loop with depth >= 2 present in slow code",
+      "R2: nesting_delta < 0 between slow and fast code"
+    ],
+    "usage_context_signature": {
+      "nesting_reduced": 1.0,
+      "loop_count_reduced": 0.973,
+      "has_membership_test_slow": 0.089,
+      "in_check_removed": 0.071,
+      "has_membership_test_fast": 0.07,
+      "set_introduced": 0.051,
+      "dict_introduced": 0.024,
+      "index_call_removed": 0.007,
+      "listcomp_introduced": 0.0,
+      "nesting_unchanged": 0.0
+    },
+    "when": [],
+    "why": [],
+    "how": [],
+    "constraints": [],
+    "representative_examples": [
+      {
+        "slow": "\"\"\"\n   This is the custom function interface.\n   You should not implement it, or speculate about its implementation\n   class CustomFunction:\n       # Returns f(x, y) for any given positive integers x and y.\n       # Note that f(x, y) is increasing with respect to both x and y.\n       # i.e. f(x, y) < f(x + 1, y), f(x, y) < f(x, y + 1)\n       def f(self, x, y):\n\"\"\"\n\nclass Solution(object):\n    def findSolution(self, customfunction, z):\n        \"\"\"\n        :type num: int\n        :type z: int\n        :rtype: List[List[int]]\n        \"\"\"\n        res = []\n        for x in range(1,1000): \n            for y in range(1,1000): \n                if customfunction.f(x,y) == z: \n                    res.append([x,y])\n        return res",
+        "fast": "\"\"\"\n   This is the custom function interface.\n   You should not implement it, or speculate about its implementation\n   class CustomFunction:\n       # Returns f(x, y) for any given positive integers x and y.\n       # Note that f(x, y) is increasing with respect to both x and y.\n       # i.e. f(x, y) < f(x + 1, y), f(x, y) < f(x, y + 1)\n       def f(self, x, y):\n\"\"\"\n\nclass Solution(object):\n    def findSolution(self, customfunction, z):\n        \"\"\"\n        :type num: int\n        :type z: int\n        :rtype: List[List[int]]\n        \"\"\"\n\n        # Soln 1: Iterate over all possible values of x and y to check output against z\n       \n        # result = []\n        # for i in range(1, z+1):\n        #     for j in range(1, z+1):\n        #         new_z = customfunction.f(i,j)\n        #         if new_z == z:\n        #             result.append([i,j])\n        \n        # return result\n\n        # Soln 2: Double pointer\n        \n        result = []\n        x, y = 1, z\n        while x <= z and y >= 1:\n            new_z = customfunction.f(x,y)\n            if new_z == z:\n                result.append([x,y])\n                x +=1\n                y-=1\n            elif new_z > z:\n                y-=1\n            else:\n                x+=1\n        return result",
+        "speedup": 1090.12
+      },
+      {
+        "slow": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        vowel_list = [\"a\",\"e\",\"i\",\"o\",\"u\"]\n        dp = [[],[]]\n        dp[1] = vowel_list\n        if n == 0:\n            return 0\n        if n == 1:\n            return 5\n        for i in range(2, n+1):\n            tmp_answer = []\n            tmp = dp[i-1]\n            for s in tmp:\n                for j in vowel_list:\n                    if s[0] < j: \n                        continue\n                    tmp_answer.append(j + s)\n            dp.append(tmp_answer)\n        return len(dp[-1])",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 976.4
+      },
+      {
+        "slow": "class Solution(object):\n    def twoEggDrop(self, n):\n        dp = [[0,0] for _ in range(n+1)]\n        for i in range(1, n+1):\n            dp[i][0] = i\n        for i in range(1, n+1):\n            for j in range(1, i+1):\n                if dp[i][1] == 0:\n                    dp[i][1] = max(dp[j-1][0], dp[i-j][1]) + 1\n                else:\n                    dp[i][1] = min(dp[i][1], max(dp[j-1][0], dp[i-j][1]) + 1)\n        return dp[n][1]",
+        "fast": "class Solution(object):\n    def twoEggDrop(self, n):\n        count = 0\n        iterable = n\n        while iterable > 0:\n            count += 1\n            iterable -= count\n        \n        return count\n        ",
+        "speedup": 773.67
+      },
+      {
+        "slow": "class Solution(object):\n    def twoEggDrop(self, n):\n        if n <= 1:\n            return n\n\n        dp = [[0] * (n + 1) for _ in range(3)]  \n        \n        for e in range(1, 3):  \n            for i in range(1, n + 1):\n                if e == 1 or i == 1:\n                    dp[e][i] = i\n                else:\n                    dp[e][i] = i\n                    for k in range(1, i):\n                        dp[e][i] = min(dp[e][i], 1 + max(dp[e - 1][k - 1], dp[e][i - k]))\n\n        return dp[2][n]",
+        "fast": "class Solution(object):\n    def twoEggDrop(self, n):\n        count = 0\n        iterable = n\n        while iterable > 0:\n            count += 1\n            iterable -= count\n        \n        return count\n        ",
+        "speedup": 704.0
+      },
+      {
+        "slow": "class Solution(object):\n    def maxHappyGroups(self, batchSize, groups):\n        \"\"\"\n        :type batchSize: int\n        :type groups: List[int]\n        :rtype: int\n        \"\"\"\n\n        mem = [0] * batchSize\n        leng = len(groups)\n\n        for g in groups:\n            mem[g % batchSize] += 1\n\n        dp = {}\n        dp[tuple(mem) + (0,)] = 1\n\n        for _ in range(leng - 1):\n            tmp = {}\n            for k in dp:\n                r = k[-1]\n                v = dp[k]\n                for i in range(batchSize):\n                    if k[i] == 0:\n                        continue\n                    newr = (r + i) % batchSize\n                    if newr == 0:\n                        newv = v + 1\n                    else: newv = v\n                    ns = k[:i] + (k[i] - 1, ) + k[i+1:-1] + (newr,)\n                    if ns not in tmp or tmp[ns] < newv:\n                        tmp[ns] = newv\n            dp = tmp\n\n        return max(dp.values())\n\n\n                \n                    \n                    \n\n\n        \n        ",
+        "fast": "class Solution(object):\n    def maxHappyGroups(self, batchSize, groups):\n        reminder = [0] * batchSize\n        for g in groups:\n            reminder[g % batchSize] += 1\n\n        # Greedy for reminder is zero and two groups reminder is zero.\n        result = reminder[0]\n\n        for i in range(1, batchSize // 2 + 1):\n            if reminder[i] == 0 or reminder[batchSize - i] == 0:\n                continue\n\n            m = (reminder[i] // 2) if i == batchSize - i else min(reminder[i], reminder[batchSize - i])\n\n            reminder[i] -= m\n            reminder[batchSize - i] -= m\n            result += m\n\n        cache = {}\n        result += self.dfs(reminder, batchSize, 0, cache)\n        return result\n\n    def dfs(self, reminder, batchSize, sum_val, cache):\n        key = tuple(reminder)\n        if key in cache:\n            return cache[key]\n\n        ret = 0\n        bonus = 1 if sum_val == 0 else 0\n\n        for i in range(1, batchSize):\n            if reminder[i] > 0:\n                modified_reminder = reminder[:]\n                modified_reminder[i] -= 1\n                ret = max(ret, bonus + self.dfs(modified_reminder, batchSize, (sum_val + i) % batchSize, cache))\n\n        cache[key] = ret\n        return ret",
+        "speedup": 638.86
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 8472,
+      "median_speedup": 1.57,
+      "mean_speedup": 6.67
+    },
+    "poi": {
+      "pattern": "P1",
+      "activation_conditions": [],
+      "transformation": "",
+      "constraints": [],
+      "expected_benefit": ""
+    }
+  },
+  "P4": {
+    "pattern_id": "P4",
+    "pattern_name": "Loop to Comprehension",
+    "structural_signature": {
+      "required": [
+        "listcomp_introduced"
+      ],
+      "supporting": [
+        "loop_count_reduced",
+        "nesting_unchanged",
+        "nesting_reduced"
+      ]
+    },
+    "detection_rules": [
+      "R1: ListComp node added in fast code"
+    ],
+    "usage_context_signature": {
+      "listcomp_introduced": 1.0,
+      "loop_count_reduced": 0.719,
+      "nesting_unchanged": 0.444,
+      "nesting_reduced": 0.423,
+      "has_membership_test_slow": 0.129,
+      "has_membership_test_fast": 0.097,
+      "in_check_removed": 0.09,
+      "set_introduced": 0.074,
+      "dict_introduced": 0.053,
+      "index_call_removed": 0.014
+    },
+    "when": [],
+    "why": [],
+    "how": [],
+    "constraints": [],
+    "representative_examples": [
+      {
+        "slow": "class Solution(object):\n    def findTheWinner(self, n, k):\n        \"\"\"\n        :type n: int\n        :type k: int\n        :rtype: int\n        \"\"\"\n        q=[]\n        for i in range(n):\n            q.append(i+1)\n\n        while len(q)>1:\n            m=k-1\n            while m>0:\n                elem=q.pop(0)\n                # print(\"removing \", q)\n                q.append(elem)\n                # print(\"reinserting \", q)\n                m-=1\n            q.pop(0)\n            # print(\"deleting \",q)\n\n        return q[0]\n        ",
+        "fast": "class Solution(object):\n    def findTheWinner(self, n, k):\n        \"\"\"\n        :type n: int\n        :type k: int\n        :rtype: int\n        \"\"\"\n        players = [num+1 for num in range(n)]\n        ind = 0\n        while len(players)>1:\n            ind =(ind+(k-1))%len(players)\n            players.pop(ind)\n        return(players[0])",
+        "speedup": 112.75
+      },
+      {
+        "slow": "import sys\n\nimport os\n\n\n\n\n\ndef main():\n\n    if os.getenv(\"LOCAL\"):\n\n        sys.stdin = open(\"input.txt\", \"r\")\n\n\n\n    N = int(sys.stdin.readline().rstrip())\n\n    ret = 1\n\n    for b in range(1, N):\n\n        for p in range(2, N//2):\n\n            if b ** p <= N:\n\n                ret = max(ret, b ** p)\n\n\n\n    print(ret)\n\n\n\n\n\nif __name__ == '__main__':\n\n    main()\n",
+        "fast": "import sys, os, math, bisect, itertools, collections, heapq, queue\n\n# from scipy.sparse.csgraph import csgraph_from_dense, floyd_warshall\n\nfrom decimal import Decimal\n\nfrom collections import defaultdict\n\n\n\n# import fractions\n\n\n\nsys.setrecursionlimit(10000000)\n\n\n\nii = lambda: int(sys.stdin.buffer.readline().rstrip())\n\nil = lambda: list(map(int, sys.stdin.buffer.readline().split()))\n\nfl = lambda: list(map(float, sys.stdin.buffer.readline().split()))\n\niln = lambda n: [int(sys.stdin.buffer.readline().rstrip()) for _ in range(n)]\n\n\n\niss = lambda: sys.stdin.buffer.readline().decode().rstrip()\n\nsl = lambda: list(map(str, sys.stdin.buffer.readline().decode().split()))\n\nisn = lambda n: [sys.stdin.buffer.readline().decode().rstrip() for _ in range(n)]\n\n\n\nlcm = lambda x, y: (x * y) // math.gcd(x, y)\n\n# lcm = lambda x, y: (x * y) // fractions.gcd(x, y)\n\n\n\nMOD = 10 ** 9 + 7\n\nMAX = float('inf')\n\n\n\n\n\ndef main():\n\n    if os.getenv(\"LOCAL\"):\n\n        sys.stdin = open(\"input.txt\", \"r\")\n\n\n\n    N = ii()\n\n    if N == 1:\n\n        print((1))\n\n        exit()\n\n\n\n    b, p = 2, 1\n\n    ret = []\n\n    while b ** p <= N:\n\n        if b ** (p + 1) <= N:\n\n            p += 1\n\n            ret.append(b ** p)\n\n        else:\n\n            b += 1\n\n            p = 1\n\n\n\n    ret.sort(reverse=True)\n\n    print((ret[0]))\n\n\n\n\n\nif __name__ == '__main__':\n\n    main()\n",
+        "speedup": 98.0
+      },
+      {
+        "slow": "from collections import deque\nclass Solution(object):\n    def findTheWinner(self, n, k):\n        \"\"\"\n        :type n: int\n        :type k: int\n        :rtype: int\n        \"\"\"\n\n        # test\n        # (2, 1) => 2\n        # (2, 3) => 2\n        # (5, 2) => 3\n        \n        # queue where you add back in and pop out the one that it lands on\n        q = deque()\n\n        for i in range(1, n + 1):\n            q.append(i)\n\n        i = 0\n        while len(q) > 1:\n            # print(q, i)\n            # player is popped out\n            if i + 1 == k:\n                q.popleft()\n                i = -1\n            # next one\n            else:\n                i_player = q.popleft()\n                q.append(i_player)\n            \n            i += 1\n\n        \n        return q.pop()\n\n\n\n\n        ",
+        "fast": "class Solution(object):\n    def findTheWinner(self, n, k):\n        \"\"\"\n        :type n: int\n        :type k: int\n        :rtype: int\n        \"\"\"\n        players = [num+1 for num in range(n)]\n        ind = 0\n        while len(players)>1:\n            ind =(ind+(k-1))%len(players)\n            players.pop(ind)\n        return(players[0])",
+        "speedup": 90.75
+      },
+      {
+        "slow": "class Solution:\n    def nextPermutation(self, nums: List[int]) -> None:\n        \"\"\"\n        Do not return anything, modify nums in-place instead.\n        \"\"\"\n        pivot = -1\n        for i in range(len(nums) -1, 0, -1):\n            if nums[i - 1] < nums[i]:\n                pivot = i - 1\n                break\n\n        if pivot == -1: # reverse the list\n            for i in range(len(nums) // 2):\n                temp = nums[i]\n                nums[i] = nums[len(nums) - i - 1]\n                nums[len(nums) - i - 1] = temp\n            return\n        \n        smallestIndex = None\n        for i in range(len(nums) - 1, pivot, -1):\n            if nums[i] > nums[pivot] and (smallestIndex is None or nums[i] < nums[smallestIndex]):\n                smallestIndex = i\n\n        # swap pivot and smallestIndex\n        temp = nums[pivot]\n        nums[pivot] = nums[smallestIndex]\n        nums[smallestIndex] = temp\n\n        for i in range((len(nums) - pivot - 1) // 2):\n            temp = nums[i + pivot + 1]\n            nums[i + pivot + 1] = nums[len(nums) - i - 1]\n            nums[len(nums) - i - 1] = temp\n\n    def getPermutation(self, n: int, k: int) -> str:\n        start = list(range(1, n + 1))\n        for i in range(k - 1):\n            self.nextPermutation(start)\n        \n        return \"\".join([str(x) for x in start])",
+        "fast": "class Solution:\n    def getPermutation(self, n: int, k: int) -> str:\n        \n        def fact(n):\n            if n==0 or n==1:\n                return 1\n            else:\n                return n*fact(n-1)\n        factList = [fact(x) for x in range(0,10)]\n\n        def getValFromArr(l, k):\n            n = len(l)\n            mod = factList[n-1]\n            pos = l[math.ceil(k/mod)-1]\n            new_k = k % mod\n            return pos, new_k\n\n        inputlist=[x for x in range(1,n+1)]\n        res=[]\n        while len(inputlist) > 0:\n            pos, k = getValFromArr(inputlist, k)\n            inputlist.remove(pos)\n            res.append(str(pos))\n        return \"\".join(res)",
+        "speedup": 85.83
+      },
+      {
+        "slow": "class Solution:\n    def nextPermutation(self, nums) -> None:\n        n = len(nums)\n\n        # Find the first decreasing element from the end\n        for i in range(n - 2, -1, -1):\n            if nums[i] < nums[i + 1]:\n                break\n        else:\n            # If no decreasing element is found, reverse the whole list\n            nums.reverse()\n            return\n\n        # Find the element just larger than the decreasing element from the end\n        for j in range(n - 1, i, -1):\n            if nums[j] > nums[i]:\n                # Swap these two elements\n                nums[i], nums[j] = nums[j], nums[i]\n                break\n\n        # Reverse the elements after the initial decreasing element\n        nums[i + 1:] = reversed(nums[i + 1:])\n\n    def getPermutation(self, n: int, k: int) -> str:\n        nums = list(range(1, n+1))\n        if k > 0:\n            for i in range(k-1):\n                self.nextPermutation(nums)\n\n        return ''.join([str(x) for x in nums])",
+        "fast": "class Solution:\n    def getPermutation(self, n: int, k: int) -> str:\n        \n        def fact(n):\n            if n==0 or n==1:\n                return 1\n            else:\n                return n*fact(n-1)\n        factList = [fact(x) for x in range(0,10)]\n\n        def getValFromArr(l, k):\n            n = len(l)\n            mod = factList[n-1]\n            pos = l[math.ceil(k/mod)-1]\n            new_k = k % mod\n            return pos, new_k\n\n        inputlist=[x for x in range(1,n+1)]\n        res=[]\n        while len(inputlist) > 0:\n            pos, k = getValFromArr(inputlist, k)\n            inputlist.remove(pos)\n            res.append(str(pos))\n        return \"\".join(res)",
+        "speedup": 75.23
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 3583,
+      "median_speedup": 1.24,
+      "mean_speedup": 3.55
+    },
+    "poi": {
+      "pattern": "P4",
+      "activation_conditions": [],
+      "transformation": "",
+      "constraints": [],
+      "expected_benefit": ""
+    }
+  },
+  "P3": {
+    "pattern_id": "P3",
+    "pattern_name": "Internal Optimization",
+    "structural_signature": {
+      "required": [],
+      "supporting": [
+        "nesting_unchanged"
+      ]
+    },
+    "detection_rules": [
+      "R1: none of the P1/P2/P4/P5/P6 conditions match",
+      "R2: loop count and nesting unchanged, only body operations differ"
+    ],
+    "usage_context_signature": {
+      "nesting_unchanged": 0.581,
+      "has_membership_test_fast": 0.117,
+      "has_membership_test_slow": 0.111,
+      "dict_introduced": 0.08,
+      "in_check_removed": 0.071,
+      "loop_count_reduced": 0.05,
+      "set_introduced": 0.043,
+      "index_call_removed": 0.01,
+      "listcomp_introduced": 0.0,
+      "nesting_reduced": 0.0
+    },
+    "when": [],
+    "why": [],
+    "how": [],
+    "constraints": [],
+    "representative_examples": [
+      {
+        "slow": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        \n\n        vowels=['a','e','i','o','u']\n\n        self.ans=0\n        def dfs(path,index):\n\n            if len(path)>n:\n                return\n            \n            if len(path)==n:\n                self.ans+= 1\n                return\n\n            \n            for i in range(index,len(vowels)):\n                dfs(path+vowels[i],i)\n        dfs(\"\",0)\n        return self.ans\n\n\n",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 1109.4
+      },
+      {
+        "slow": "class Solution(object):\n\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        vowels= ['a','e','i','o','u']\n\n        def rec(lenthOfString, lastChar):\n            count = 0\n            if lenthOfString == n:\n                return 1\n            for i in vowels:\n                if lastChar <= i:\n                    count = count+ rec(lenthOfString+1, i)\n            return count           \n\n        return rec(0, \"\")\n\n\n ",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 870.6
+      },
+      {
+        "slow": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        start = 0\n        ch_arr = ['a','e','i','o','u']\n        count = [0]\n        \n        ans =  self.countHelper(start,ch_arr,n)\n        # print (ans)\n        return ans\n\n    def countHelper(self,start,ch_arr,n):\n        count = 0\n        if n==1:\n            return len(ch_arr)-start\n        for i in range(start,len(ch_arr)):\n            count+=self.countHelper(i,ch_arr,n-1)\n        return count\n\n        \n\n        ",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 800.6
+      },
+      {
+        "slow": "class Solution(object):\n    def countVowelStrings(self, n):\n        def count(m, n):\n            if m == 0:\n                return 1\n            u = 0\n            for x in range(n, 5):\n                u += count(m - 1, x)\n            return u\n        return count(n, 0)",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 778.6
+      },
+      {
+        "slow": "class Solution(object):\n    def countVowelStrings(self,n):\n        def count(g,l):\n            if g==0:\n                return 1\n            k=0\n            for x in range(l,5):\n                k+=count(g-1,x)\n            return k\n        return count(n,0)\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        ",
+        "fast": "class Solution(object):\n    def countVowelStrings(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n \n        li = [1, 1, 1, 1, 1]\n        for i in range(2, n+1):\n            for j in range(1, 5): li[j] = li[j-1] + li[j]\n\n        return sum(li)",
+        "speedup": 766.0
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 6226,
+      "median_speedup": 1.43,
+      "mean_speedup": 5.31
+    },
+    "poi": {
+      "pattern": "P3",
+      "activation_conditions": [],
+      "transformation": "",
+      "constraints": [],
+      "expected_benefit": ""
+    }
+  },
+  "P5": {
+    "pattern_id": "P5",
+    "pattern_name": "Loop to Set Operation",
+    "structural_signature": {
+      "required": [
+        "has_membership_test_fast",
+        "set_introduced"
+      ],
+      "supporting": [
+        "loop_count_reduced",
+        "nesting_reduced",
+        "nesting_unchanged",
+        "has_membership_test_slow"
+      ]
+    },
+    "detection_rules": [
+      "R1: SetComp node or set() call added in fast code",
+      "R2: an actual `in` membership check is present in fast code"
+    ],
+    "usage_context_signature": {
+      "has_membership_test_fast": 1.0,
+      "set_introduced": 1.0,
+      "loop_count_reduced": 0.748,
+      "nesting_reduced": 0.416,
+      "nesting_unchanged": 0.412,
+      "has_membership_test_slow": 0.372,
+      "dict_introduced": 0.094,
+      "in_check_removed": 0.086,
+      "index_call_removed": 0.01,
+      "listcomp_introduced": 0.0
+    },
+    "when": [
+      "A program contains loops that perform membership tests against large datasets"
+    ],
+    "why": [
+      "Membership tests can be slow, especially when performed inside loops, leading to significant overall execution time"
+    ],
+    "how": [
+      "Precompute the results of the membership test and store them in a set or similar data structure"
+    ],
+    "constraints": [
+      "The membership test must be deterministic and produce the same result every time it is called with the same input"
+    ],
+    "representative_examples": [
+      {
+        "slow": "class Solution(object):\n\n    def reverse(self, num):\n        rev = 0\n        orig = num\n        while num > 0:\n            rem = num % 10\n            rev = rem + ( rev * 10)\n            num = num /10\n        return rev\n\n    def sumOfNumberAndReverse(self, num):\n        \"\"\"\n        :type num: int\n        :rtype: bool\n        \"\"\"\n        if num == 0:\n            return True\n        for i in range(num):\n            if i + self.reverse(i) == num:\n                return True\n        return False\n",
+        "fast": "l=set()\ntemp=0\nclass Solution:\n    def __req(self):\n        for i in range(50000):\n            global l\n            l.add(i+int(str(i)[::-1]))\n    def sumOfNumberAndReverse(self, num):\n        global temp\n        if temp==0:\n            self.__req()\n            temp=1\n        if num in l:\n            return True\n        return False",
+        "speedup": 123.65
+      },
+      {
+        "slow": "def reverseNum(number):\n    reversed_num = 0\n\n    while number != 0:\n      digit = number % 10\n      reversed_num = reversed_num * 10 + digit\n      number //= 10\n    return reversed_num\n\nclass Solution(object):\n    def sumOfNumberAndReverse(self, num):\n        \"\"\"\n        :type num: int\n        :rtype: bool\n        \"\"\"\n        if num == 0:\n            return 1\n        else:\n         for i in range(num):\n            if i + reverseNum(i) == num:\n                return 1\n         return 0",
+        "fast": "l=set()\ntemp=0\nclass Solution:\n    def __req(self):\n        for i in range(50000):\n            global l\n            l.add(i+int(str(i)[::-1]))\n    def sumOfNumberAndReverse(self, num):\n        global temp\n        if temp==0:\n            self.__req()\n            temp=1\n        if num in l:\n            return True\n        return False",
+        "speedup": 114.59
+      },
+      {
+        "slow": "class Solution(object):\n    def punishmentNumber(self, n):\n        answer = 0\n        for i in range(n):\n            i += 1\n            squared = str(i*i)\n            for binNum in range(2 ** (len(squared) - 1)):\n                binNum = format(binNum, '#010b')\n                binNum = binNum[len(binNum) - len(squared) + 1:]\n                sum = 0\n                temp = 0\n                for x in range(len(binNum)):\n                    if binNum[x] == \"1\":\n                        temp = int(str(temp) + squared[x])\n                        sum += temp\n                        temp = 0\n                    if binNum[x] == \"0\":\n                        temp = int(str(temp) + squared[x])\n                temp = int(str(temp) + squared[-1])\n                sum += temp\n                if sum == i:\n                    answer += sum**2\n                    break\n        return answer\n        ",
+        "fast": "def partition(v):\n    v = str(v)\n    if len(v) == 0:\n        return set()\n    elif len(v) == 1:\n        return {int(v)}\n    r = {int(v)}\n    for i in range(len(v)):\n        first = int(v[:i + 1])\n        second = partition(v[i + 1:])\n        for sec in second:\n            r.add(first + int(sec))\n    return r\n\npunish = [False] * 1001\nfor i in range(1001):\n    if i in partition(i*i):\n        punish[i] = True\n\nclass Solution(object):\n    def punishmentNumber(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        def partition(v):\n            v = str(v)\n            if len(v) == 0:\n                return set()\n            elif len(v) == 1:\n                return {int(v)}\n            r = {int(v)}\n            for i in range(len(v)):\n                first = int(v[:i+1])\n                second = partition(v[i+1:])\n                for sec in second:\n                    r.add(first + int(sec))\n            return r\n        res = 0\n        for i in range(1,n+1):\n            if punish[i]:\n                res += i * i\n        return res",
+        "speedup": 108.54
+      },
+      {
+        "slow": "class Solution:\n    def minStickers(self, stickers: List[str], target: str) -> int:\n        memo = defaultdict(int)\n        states = [Counter(st) for st in stickers]\n        \n        def helper(target):\n            if target == \"\":\n                return 0\n\n            if target in memo:\n                return memo[target]\n\n            tar = [0 for _ in range(26)]\n            for char in target:\n                tar[ord(char) - ord('a')] += 1\n            \n            res = float(\"inf\")\n            for state in states:\n                new_target = \"\"\n                for char in string.ascii_lowercase:\n                    if tar[ord(char) - ord('a')] > state[char]:\n                        new_target += char * (tar[ord(char) - ord('a')] - state[char])\n                \n                if new_target != target:   \n                    tmp = 1 + helper(new_target)\n                    res = min(res, tmp)\n            \n            memo[target] = res\n            return res\n\n        ans = helper(\"\".join(sorted(target)))\n\n        if ans == float(\"inf\"):\n            return -1\n\n        return ans\n\n\n\n\n        ",
+        "fast": "class Solution:\n    def minStickers(self, stickers: List[str], target: str) -> int:\n        tcount = Counter(target)\n        def getScore(s):\n            temp = dict(tcount)\n            sdict = defaultdict(int)\n            res = 0\n            for c in s:\n                if c in temp and temp[c] > 0:\n                    temp[c] -= 1\n                    res += 1\n                    sdict[c] += 1\n            return (res, sdict)\n        stickers = [getScore(s) for s in stickers]\n        stickers.sort(key = lambda x: x[0], reverse = True)\n        stickers = [x[1] for x in stickers if x[0] > 0]\n        opt = [stickers[0]]\n        for i in range(1, len(stickers)):\n            if opt[-1].keys() == stickers[i].keys() :\n                continue\n            opt.append(stickers[i])\n        stickers = opt[:]\n            \n        seen = set()\n        q = deque([target])\n        step = 0\n        while q:\n            n = len(q)\n            step += 1\n            for i in range(n):\n                cur = q.popleft()\n                if cur in seen:\n                    continue\n                seen.add(cur)\n                for stick in stickers:\n                    if cur[0] not in stick:\n                        continue\n                    new = str(cur)\n                    for s in stick:\n                        new = new.replace(s,'', stick[s])\n                    if new == \"\":\n                        return step\n                    if new not in seen:\n                        q.append(new)\n        return -1",
+        "speedup": 75.98
+      },
+      {
+        "slow": "class Solution:\n    def minStickers(self, stickers: List[str], target: str) -> int:\n        smap_list = [Counter(s) for s in stickers]\n        dp = {}\n\n        def dfs(t):\n            if not t:\n                return 0\n            if t in dp:\n                return dp[t]\n            tmap = Counter(t)\n            res = inf\n            for i in range(len(smap_list)):\n                if not [k for k in tmap if k in smap_list[i]]:\n                    continue\n                cur = tmap-smap_list[i]\n                s = ''\n                for k in cur:\n                    s += k*cur[k]\n                res = min(res, 1+ dfs(s))\n            dp[t] = res\n            return res\n        \n        out = dfs(target)\n        return out if out != inf else -1",
+        "fast": "class Solution:\n    def minStickers(self, stickers: List[str], target: str) -> int:\n        tcount = Counter(target)\n        def getScore(s):\n            temp = dict(tcount)\n            sdict = defaultdict(int)\n            res = 0\n            for c in s:\n                if c in temp and temp[c] > 0:\n                    temp[c] -= 1\n                    res += 1\n                    sdict[c] += 1\n            return (res, sdict)\n        stickers = [getScore(s) for s in stickers]\n        stickers.sort(key = lambda x: x[0], reverse = True)\n        stickers = [x[1] for x in stickers if x[0] > 0]\n        opt = [stickers[0]]\n        for i in range(1, len(stickers)):\n            if opt[-1].keys() == stickers[i].keys() :\n                continue\n            opt.append(stickers[i])\n        stickers = opt[:]\n            \n        seen = set()\n        q = deque([target])\n        step = 0\n        while q:\n            n = len(q)\n            step += 1\n            for i in range(n):\n                cur = q.popleft()\n                if cur in seen:\n                    continue\n                seen.add(cur)\n                for stick in stickers:\n                    if cur[0] not in stick:\n                        continue\n                    new = str(cur)\n                    for s in stick:\n                        new = new.replace(s,'', stick[s])\n                    if new == \"\":\n                        return step\n                    if new not in seen:\n                        q.append(new)\n        return -1",
+        "speedup": 75.98
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 500,
+      "median_speedup": 2.43,
+      "mean_speedup": 7.86
+    },
+    "poi": {
+      "pattern": "Loop to Set Operation",
+      "activation_conditions": [
+        "Loops contain membership tests against large datasets"
+      ],
+      "transformation": "Move the membership test outside the loop and precompute its results using a set",
+      "constraints": [
+        "Ensure the membership test does not have side effects and produces consistent results"
+      ],
+      "expected_benefit": "Reduces the number of times the membership test needs to be executed, significantly improving performance"
+    }
+  },
+  "P6": {
+    "pattern_id": "P6",
+    "pattern_name": "Loop to Dict Lookup",
+    "structural_signature": {
+      "required": [
+        "dict_introduced",
+        "has_membership_test_slow",
+        "in_check_removed"
+      ],
+      "supporting": [
+        "nesting_unchanged",
+        "loop_count_reduced"
+      ]
+    },
+    "detection_rules": [
+      "R1: dict/defaultdict/OrderedDict construct added in fast code",
+      "R2: index() call or `in` check removed from slow code"
+    ],
+    "usage_context_signature": {
+      "dict_introduced": 1.0,
+      "has_membership_test_slow": 0.94,
+      "in_check_removed": 0.94,
+      "nesting_unchanged": 0.575,
+      "loop_count_reduced": 0.52,
+      "nesting_reduced": 0.26,
+      "set_introduced": 0.1,
+      "index_call_removed": 0.095,
+      "has_membership_test_fast": 0.085,
+      "listcomp_introduced": 0.0
+    },
+    "when": [
+      "A loop iteratively checks membership in a dictionary"
+    ],
+    "why": [
+      "Dictionary lookups can be slow compared to other operations"
+    ],
+    "how": [
+      "Convert the loop to use a dictionary lookup to avoid repeated membership tests"
+    ],
+    "constraints": [
+      "The dictionary should contain all necessary keys before the loop starts"
+    ],
+    "representative_examples": [
+      {
+        "slow": "\nD = {}\nSD = {}\n\nclass Solution(object):\n    def dist(self, p, q):\n        name = tuple([tuple(p), tuple(q)])\n        if name in D:\n            return D[name]\n        ans = sqrt((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2)\n        D[name] = ans\n        D[tuple([tuple(q), tuple(p)])] = ans\n        return ans\n    \n    def sqDist(self, p, q):\n        name = tuple([tuple(p), tuple(q)])\n        if name in SD:\n            return SD[name]\n        ans = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2\n        SD[name] = ans\n        SD[tuple([tuple(q), tuple(p)])] = ans\n        return ans\n\n    def area(self, points):\n        p1 = points[0]\n        p2 = points[1]\n        p3 = points[2]\n        p4 = points[3]\n\n        d12 = self.dist(p1, p2)\n        d34 = self.dist(p3, p4)\n        if d12 != d34:\n            return -1\n        \n        d13 = self.dist(p1, p3)\n        d24 = self.dist(p2, p4)\n        if d13 != d24:\n            return -1\n        \n        sd12 = self.sqDist(p1, p2)\n        sd13 = self.sqDist(p1, p3)\n        sd23 = self.sqDist(p2, p3)\n        if sd23 != sd12 + sd13:\n            return -1\n        \n        return d12 * d13\n\n    def minAreaFreeRect(self, points):\n        \"\"\"\n        :type points: List[List[int]]\n        :rtype: float\n        \"\"\"\n        n = len(points)\n\n        ans = float(\"inf\")\n\n        points.sort(key = lambda x: [x[0], x[1]])\n\n        for i in range(n):\n            for j in range(i + 1, n):\n                for k in range(j + 1, n):\n                    for m in range(k + 1, n):\n                        cur = self.area([points[i], points[j], points[k], points[m]])\n                        if -1 < cur < ans:\n                            ans = cur\n        \n        if ans == float(\"inf\"):\n            return 0\n        return ans",
+        "fast": "class Solution(object):\n    def minAreaFreeRect(self, points):\n        \"\"\"\n        :type points: List[List[int]]\n        :rtype: float\n        \"\"\"\n        min_area = float('inf')\n        diagonal_points = defaultdict(list)\n        for ind, p1 in enumerate(points):\n            for p2 in points[ind+1:]:\n                diagonal_points[p1[0]+p2[0], p1[1]+p2[1]].append((p1, p2))\n        \n        dist = lambda p,q: (p[0]-q[0])**2 + (p[1]-q[1])**2\n        for g in diagonal_points.values():\n            for ind, p1 in enumerate(g):\n                for p2 in g[ind+1:]:\n                    if dist(p1[0],p1[1]) == dist(p2[0],p2[1]):\n                        area = math.sqrt((p1[0][0]-p2[0][0])**2+(p1[0][1]-p2[0][1])**2)*math.sqrt((p1[0][0]-p2[1][0])**2+(p1[0][1]-p2[1][1])**2)\n                        min_area = min(min_area, area)\n        \n        return min_area if min_area != float('inf') else 0\n ",
+        "speedup": 184.98
+      },
+      {
+        "slow": "class Solution:\n    def exist(self, board: List[List[str]], word: str) -> bool:\n        def dfs(r, c, i, visited):\n            dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)]\n            \n            if i >= len(word):\n                return True\n\n            if not(0 <= r < len(board) and 0 <= c < len(board[0])):\n                return False\n            if (r, c) in visited:\n                return False\n\n            if board[r][c] != word[i]:\n                return False\n\n            visited.add((r, c))\n            for d in dirs:\n                nr  = r + d[0]\n                nc = c + d[1]\n                if dfs(nr, nc, i + 1, visited):\n                    return True\n\n            visited.remove((r, c))\n\n            return False\n        \n        for r in range(len(board)):\n            for c in range(len(board[0])):\n                if board[r][c] == word[0]:\n                    if dfs(r, c, 0, set()):\n                        return True\n        return False\n\n",
+        "fast": "class Solution:\n    def exist(self, board: List[List[str]], word: str) -> bool:\n        # Count characters in board using defaultdict\n        board_char_count = defaultdict(int)\n        for row in board:\n            for char in row:\n                board_char_count[char] += 1\n\n        # Count characters in word using defaultdict\n        word_char_count = defaultdict(int)\n        for char in word:\n            word_char_count[char] += 1\n\n        # Early Termination Check\n        for char, count in word_char_count.items():\n            if count > board_char_count[char]:\n                return False\n\n        # Decide whether to reverse the word\n        first_char, last_char = word[0], word[-1]\n        if board_char_count[last_char] < board_char_count[first_char]:\n            word = word[::-1]  # Reverse the word\n\n        def dfs(i, j, word_index):\n            if word_index == len(word):\n                return True\n            if i < 0 or i >= len(board) or j < 0 or j >= len(board[0]):\n                return False\n            if board[i][j] != word[word_index]:\n                return False\n            \n            temp = board[i][j] \n            board[i][j] = 'X'\n\n            found = (dfs(i + 1, j, word_index + 1) or\n                     dfs(i - 1, j, word_index + 1) or\n                     dfs(i, j + 1, word_index + 1) or\n                     dfs(i, j - 1, word_index + 1))\n\n            board[i][j] = temp\n            return found\n\n        for i in range(len(board)):\n            for j in range(len(board[0])):\n                if dfs(i, j, 0):\n                    return True\n\n        return False",
+        "speedup": 102.61
+      },
+      {
+        "slow": "class Solution(object):\n    def checkInclusion(self, s1, s2):\n        \"\"\"\n        :type s1: str\n        :type s2: str\n        :rtype: bool\n\n        s1 , s2\n        \n        \"\"\"\n        s1, s2 = list(s1), list(s2)\n        s1_counter = Counter(s1)\n        length = len(s1)\n\n        holds = []\n\n        hash_s1 = set(s1)\n\n        for i in range(len(s2) - length + 1):\n            curr = s2[i:i + length]\n            if s2[i] in hash_s1:\n                curr.sort()\n                holds.append(curr)\n\n        s1.sort()\n\n        for hold in holds:\n            if s1 == hold:\n                return True\n\n        return False\n\n        ",
+        "fast": "class Solution(object):\n    def checkInclusion(self, s1, s2):\n        \"\"\"\n        :type s1: str\n        :type s2: str\n        :rtype: bool\n        \"\"\"\n        #edge case\n        if len(s1) > len(s2):\n            return False\n\n        dict1, dict2 = defaultdict(int), defaultdict(int)\n        for letter in s1:\n            dict1[letter] += 1\n\n\n        s1_len = len(s1)\n        for i in range(s1_len):\n            dict2[s2[i]] += 1\n\n        if dict1 == dict2:\n            return True\n\n        l = 0\n        for r in range(s1_len, len(s2)):\n            if dict2 != dict1:\n                dict2[s2[l]] -= 1\n                if dict2[s2[l]] <= 0:\n                    del dict2[s2[l]]\n                    \n                if s2[r] not in dict2:\n                    dict2[s2[r]] = 1\n                else:\n                    dict2[s2[r]] += 1\n                l += 1\n            if dict2 == dict1:\n                return True\n        \n\n        return False\n        \n            \n\n\n\n        \"\"\"\n        adc\n        eicddac\n        \"\"\"\n            \n\n\n                \n        \n    \n        ",
+        "speedup": 91.49
+      },
+      {
+        "slow": "class Solution:\n    def exist(self, board: List[List[str]], word: str) -> bool:\n        # start = 0\n        # recursive word search:\n        #   given index, board, visited:\n        #       if index is at the end of the word and current cell is the last character, true\n        #       search every cell to the top, left, right, and down of current cell\n        #       if next cell has same letter as next letter in word:\n        #           add cell to visited, call index + 1, next cell, visited\n        #       return true if any true else false\n\n        m, n = len(board), len(board[0]) \n\n        def word_search_recursive(current_word_index, visited, current_cell):\n            print()\n            i, j = current_cell\n            current_character = board[i][j]\n            if current_word_index == (len(word) - 1):\n                return current_character == word[current_word_index]\n\n            elif current_character != word[current_word_index]:\n                return False\n\n            neighbor_results = list()\n\n            for d_i, d_j in {(0, 1), (0, -1), (1, 0), (-1, 0)}:\n                next_cell = (i + d_i, j + d_j)\n\n                if next_cell[0] < 0 or next_cell[0] >= m: continue\n                if next_cell[1] < 0 or next_cell[1] >= n: continue\n                if next_cell in visited: continue\n\n                visited.add(next_cell)\n                if word_search_recursive(current_word_index + 1, visited, next_cell):\n                    return True\n                visited.remove(next_cell)\n\n            return False\n\n\n        for i in range(m):\n            for j in range(n):\n                start_i = int(0)\n                visited = set({(i, j)})\n                if not word_search_recursive(start_i, visited, (i, j)):\n                    continue\n                else:\n                    return True\n        \n        return False\n\n        \n\n        ",
+        "fast": "class Solution:\n    def exist(self, board: List[List[str]], word: str) -> bool:\n        # Count characters in board using defaultdict\n        board_char_count = defaultdict(int)\n        for row in board:\n            for char in row:\n                board_char_count[char] += 1\n\n        # Count characters in word using defaultdict\n        word_char_count = defaultdict(int)\n        for char in word:\n            word_char_count[char] += 1\n\n        # Early Termination Check\n        for char, count in word_char_count.items():\n            if count > board_char_count[char]:\n                return False\n\n        # Decide whether to reverse the word\n        first_char, last_char = word[0], word[-1]\n        if board_char_count[last_char] < board_char_count[first_char]:\n            word = word[::-1]  # Reverse the word\n\n        def dfs(i, j, word_index):\n            if word_index == len(word):\n                return True\n            if i < 0 or i >= len(board) or j < 0 or j >= len(board[0]):\n                return False\n            if board[i][j] != word[word_index]:\n                return False\n            \n            temp = board[i][j] \n            board[i][j] = 'X'\n\n            found = (dfs(i + 1, j, word_index + 1) or\n                     dfs(i - 1, j, word_index + 1) or\n                     dfs(i, j + 1, word_index + 1) or\n                     dfs(i, j - 1, word_index + 1))\n\n            board[i][j] = temp\n            return found\n\n        for i in range(len(board)):\n            for j in range(len(board[0])):\n                if dfs(i, j, 0):\n                    return True\n\n        return False",
+        "speedup": 81.21
+      },
+      {
+        "slow": "class Solution(object):\n    def checkInclusion(self, s1, s2):\n        \"\"\"\n        :type s1: str\n        :type s2: str\n        :rtype: bool\n        \"\"\"\n        \n        count1 = {}\n        count1 = Counter(s1)\n\n        ans = False\n\n        for i in range(len(s2)):\n            if s2[i] in count1:\n                left = i\n                count2 = {}\n                if i + len(s1) <= len(s2):\n                    for j in range(i, i + len(s1)):\n                        if s2[j] in count1:\n                            count2[s2[j]] = count2.get(s2[j], 0) + 1\n                        else:\n                            break\n                    \n                    if count1 == count2:\n                        return True\n        return ans",
+        "fast": "class Solution(object):\n    def checkInclusion(self, s1, s2):\n        \"\"\"\n        :type s1: str\n        :type s2: str\n        :rtype: bool\n        \"\"\"\n        #edge case\n        if len(s1) > len(s2):\n            return False\n\n        dict1, dict2 = defaultdict(int), defaultdict(int)\n        for letter in s1:\n            dict1[letter] += 1\n\n\n        s1_len = len(s1)\n        for i in range(s1_len):\n            dict2[s2[i]] += 1\n\n        if dict1 == dict2:\n            return True\n\n        l = 0\n        for r in range(s1_len, len(s2)):\n            if dict2 != dict1:\n                dict2[s2[l]] -= 1\n                if dict2[s2[l]] <= 0:\n                    del dict2[s2[l]]\n                    \n                if s2[r] not in dict2:\n                    dict2[s2[r]] = 1\n                else:\n                    dict2[s2[r]] += 1\n                l += 1\n            if dict2 == dict1:\n                return True\n        \n\n        return False\n        \n            \n\n\n\n        \"\"\"\n        adc\n        eicddac\n        \"\"\"\n            \n\n\n                \n        \n    \n        ",
+        "speedup": 79.44
+      }
+    ],
+    "runtime_speedup_statistics": {
+      "count": 200,
+      "median_speedup": 2.26,
+      "mean_speedup": 8.08
+    },
+    "poi": {
+      "pattern": "Loop to Dict Lookup",
+      "activation_conditions": [
+        "There is a loop that performs membership tests on a dictionary"
+      ],
+      "transformation": "Replace the loop with a single dictionary lookup to retrieve the required data.",
+      "constraints": [
+        "Ensure the dictionary contains all necessary keys before the transformation"
+      ],
+      "expected_benefit": "Reduces the number of dictionary membership tests, potentially improving performance."
+    }
+  }
+}
